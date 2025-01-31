@@ -46,6 +46,8 @@ export default {
     stepLabel: "步骤 {number}",
     suggestionLabel: "建议",
     gotItButton: "明白了",
+    taskDeleted: "任务已删除",
+    undoButton: "撤销",
   },
   notes: {
     title: "记录思绪",
@@ -58,6 +60,11 @@ export default {
     },
     addPlaceholder: "写下你的想法...",
     addButton: "记录",
+    searchPlaceholder: "搜索记录...",
+    allMoods: "全部心情",
+    selectMood: "你现在的心情是？",
+    content: "有什么想法？",
+    saving: "保存中...",
   },
   community: {
     title: "社区交流",
@@ -69,5 +76,9 @@ export default {
     about: "关于我们",
     guide: "使用指南",
     privacy: "隐私政策",
+  },
+  common: {
+    save: "保存",
+    cancel: "取消",
   },
 } as const;

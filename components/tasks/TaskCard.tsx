@@ -18,6 +18,7 @@ interface TaskCardProps extends Task {
     isComplete: boolean;
   }>;
   isDecomposing?: boolean;
+  onEdit: (id: string, newTitle: string) => void;
 }
 
 export function TaskCard({
@@ -30,12 +31,15 @@ export function TaskCard({
   onDelete,
   onDecompose,
   isDecomposing,
+  onEdit,
 }: TaskCardProps) {
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(false);
   const [mounted, setMounted] = useState(false);
   const [suggestion, setSuggestion] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState(title);
 
   useEffect(() => {
     setMounted(true);
@@ -62,6 +66,13 @@ export function TaskCard({
 
   const handleGotIt = () => {
     setSuggestion("");
+  };
+
+  const handleEditSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editedTitle.trim() === "") return;
+    onEdit(id, editedTitle.trim());
+    setIsEditing(false);
   };
 
   return (
@@ -100,48 +111,95 @@ export function TaskCard({
           )}
         </button>
 
-        <span
-          className={cn("flex-1", {
-            "text-gray-400 line-through": completed,
-            "text-gray-700": !completed,
-            "text-sm": parentId,
-          })}
-        >
-          {title}
-        </span>
-
-        {!parentId && !completed && (
-          <Button
-            variant="secondary"
-            onClick={handleSuggestStep}
-            isLoading={isDecomposing}
-            className="!px-2.5 !py-1 text-sm text-gray-600 hover:text-primary-dark 
-              bg-gray-50 hover:bg-gray-100 border border-gray-200
-              !shadow-none hover:!shadow-sm transition-all"
+        {isEditing ? (
+          <form onSubmit={handleEditSubmit} className="flex-1">
+            <input
+              type="text"
+              value={editedTitle}
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="w-full bg-white rounded-lg px-3 py-1.5
+                border border-gray-200 focus:border-primary
+                text-gray-700 text-sm focus:outline-none"
+              autoFocus
+              onBlur={() => setIsEditing(false)}
+            />
+          </form>
+        ) : (
+          <span
+            className={cn("flex-1", {
+              "text-gray-400 line-through": completed,
+              "text-gray-700": !completed,
+              "text-sm": parentId,
+            })}
           >
-            {suggestion ? t.tasks.tryAnotherButton : t.tasks.suggestStepButton}
-          </Button>
+            {title}
+          </span>
         )}
 
-        <Button
-          variant="secondary"
-          onClick={() => onDelete(id)}
-          className="!p-2 text-gray-400 hover:text-primary"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex items-center gap-2">
+          {!parentId && !completed && (
+            <Button
+              variant="secondary"
+              onClick={handleSuggestStep}
+              isLoading={isDecomposing}
+              className="!px-2.5 !py-1 text-sm text-gray-600 hover:text-primary-dark 
+                bg-gray-50 hover:bg-gray-100 border border-gray-200
+                !shadow-none hover:!shadow-sm transition-all"
+            >
+              {suggestion
+                ? t.tasks.tryAnotherButton
+                : t.tasks.suggestStepButton}
+            </Button>
+          )}
+
+          <Button
+            variant="secondary"
+            onClick={() => setIsEditing(true)}
+            className="!p-2 text-gray-400 hover:text-primary
+              bg-white hover:bg-primary-50
+              transition-all duration-200
+              border border-gray-200 hover:border-primary-200
+              opacity-50 hover:opacity-100"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-            />
-          </svg>
-        </Button>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => onDelete(id)}
+            className="!p-2 text-gray-400 hover:text-rose-500
+              bg-white hover:bg-rose-50
+              transition-all duration-200
+              border border-gray-200 hover:border-rose-200
+              opacity-50 hover:opacity-100"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </Button>
+        </div>
       </Card>
 
       {subtasks && subtasks.length > 0 && (
@@ -153,6 +211,7 @@ export function TaskCard({
                 {...subtask}
                 onToggle={onToggle}
                 onDelete={onDelete}
+                onEdit={onEdit}
               />
             ))}
           </div>

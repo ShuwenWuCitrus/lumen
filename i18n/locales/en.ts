@@ -48,6 +48,8 @@ export default {
     stepLabel: "Step {number}",
     suggestionLabel: "Suggestion",
     gotItButton: "Got It",
+    taskDeleted: "Task deleted",
+    undoButton: "Undo",
   },
   notes: {
     title: "Record Thoughts",
@@ -60,6 +62,11 @@ export default {
     },
     addPlaceholder: "Write your thoughts...",
     addButton: "Record",
+    searchPlaceholder: "Search notes...",
+    allMoods: "All Moods",
+    selectMood: "How are you feeling?",
+    content: "What's on your mind?",
+    saving: "Saving...",
   },
   community: {
     title: "Community",
@@ -71,5 +78,9 @@ export default {
     about: "About Us",
     guide: "User Guide",
     privacy: "Privacy Policy",
+  },
+  common: {
+    save: "Save",
+    cancel: "Cancel",
   },
 } as const;

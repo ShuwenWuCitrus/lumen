@@ -5,6 +5,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { Task } from "@/types/task";
+import { Card } from "@/components/common/Card";
+import { Button } from "@/components/common/Button";
+
+interface DeletedTask extends Task {
+  deletedAt: number;
+}
 
 export default function TasksPage() {
   const { t, language } = useLanguage();
@@ -13,6 +19,8 @@ export default function TasksPage() {
   const [decomposingTasks, setDecomposingTasks] = useState<Set<string>>(
     new Set()
   );
+  const [deletedTask, setDeletedTask] = useState<DeletedTask | null>(null);
+  const [showUndo, setShowUndo] = useState(false);
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,19 +81,49 @@ export default function TasksPage() {
   };
 
   const toggleTask = (id: string) => {
-    setTasks(
-      tasks.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
+    setTasks((prevTasks) =>
+      prevTasks.map((task) => {
+        if (task.id === id || task.parentId === id) {
+          return { ...task, completed: !task.completed };
+        }
+        return task;
+      })
     );
   };
 
   const deleteTask = (id: string) => {
+    const taskToDelete = tasks.find((task) => task.id === id);
+    if (!taskToDelete) return;
+
     setTasks(tasks.filter((task) => task.id !== id));
+    setDeletedTask({ ...taskToDelete, deletedAt: Date.now() });
+    setShowUndo(true);
+
+    // 3秒后自动隐藏撤销按钮
+    setTimeout(() => {
+      setShowUndo(false);
+    }, 3000);
+  };
+
+  const editTask = (id: string, newTitle: string) => {
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === id ? { ...task, title: newTitle } : task
+      )
+    );
   };
 
   const activeTasks = tasks.filter((task) => !task.completed && !task.parentId);
-  const completedTasks = tasks.filter((task) => task.completed);
+  const completedTasks = tasks.filter(
+    (task) => task.completed && !task.parentId
+  );
+
+  const handleUndo = () => {
+    if (!deletedTask) return;
+    setTasks((prev) => [...prev, deletedTask]);
+    setDeletedTask(null);
+    setShowUndo(false);
+  };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -103,18 +141,17 @@ export default function TasksPage() {
           />
 
           <div className="space-y-4">
-            {tasks
-              .filter((task) => !task.parentId)
-              .map((task) => (
-                <TaskCard
-                  key={task.id}
-                  {...task}
-                  onToggle={toggleTask}
-                  onDelete={deleteTask}
-                  onDecompose={decomposeTask}
-                  isDecomposing={decomposingTasks.has(task.id)}
-                />
-              ))}
+            {activeTasks.map((task) => (
+              <TaskCard
+                key={task.id}
+                {...task}
+                onToggle={toggleTask}
+                onDelete={deleteTask}
+                onDecompose={decomposeTask}
+                onEdit={editTask}
+                isDecomposing={decomposingTasks.has(task.id)}
+              />
+            ))}
           </div>
 
           {completedTasks.length > 0 && (
@@ -129,6 +166,7 @@ export default function TasksPage() {
                     {...task}
                     onToggle={toggleTask}
                     onDelete={deleteTask}
+                    onEdit={editTask}
                   />
                 ))}
               </div>
@@ -136,6 +174,23 @@ export default function TasksPage() {
           )}
         </div>
       </div>
+
+      {/* 撤销提示 */}
+      {showUndo && (
+        <div className="fixed bottom-4 right-4 animate-fadeIn">
+          <Card className="bg-gray-800 text-white px-4 py-3 flex items-center gap-3">
+            <span>{t.tasks.taskDeleted}</span>
+            <Button
+              variant="secondary"
+              onClick={handleUndo}
+              className="!py-1 !px-3 bg-white/10 hover:bg-white/20 
+                border-white/20 text-white"
+            >
+              {t.tasks.undoButton}
+            </Button>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
