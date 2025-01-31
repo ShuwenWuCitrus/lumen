@@ -7,9 +7,12 @@ import { TaskForm } from "@/components/tasks/TaskForm";
 import { Task } from "@/types/task";
 
 export default function TasksPage() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTask, setNewTask] = useState("");
+  const [decomposingTasks, setDecomposingTasks] = useState<Set<string>>(
+    new Set()
+  );
 
   const addTask = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +35,43 @@ export default function TasksPage() {
     setNewTask("");
   };
 
+  const decomposeTask = async (
+    taskId: string,
+    taskText: string,
+    previousSteps: string[] = []
+  ) => {
+    if (!taskText.trim()) return;
+
+    setDecomposingTasks((prev) => new Set(prev).add(taskId));
+    try {
+      const res = await fetch("/api/decompose", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: taskText,
+          language,
+          previousSteps,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const data = await res.json();
+      return data;
+    } catch (error) {
+      console.error(error);
+      alert(t.tasks.suggestError);
+    } finally {
+      setDecomposingTasks((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+    }
+  };
+
   const toggleTask = (id: string) => {
     setTasks(
       tasks.map((task) =>
@@ -44,7 +84,7 @@ export default function TasksPage() {
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
-  const activeTasks = tasks.filter((task) => !task.completed);
+  const activeTasks = tasks.filter((task) => !task.completed && !task.parentId);
   const completedTasks = tasks.filter((task) => task.completed);
 
   return (
@@ -63,14 +103,18 @@ export default function TasksPage() {
           />
 
           <div className="space-y-4">
-            {activeTasks.map((task) => (
-              <TaskCard
-                key={task.id}
-                {...task}
-                onToggle={toggleTask}
-                onDelete={deleteTask}
-              />
-            ))}
+            {tasks
+              .filter((task) => !task.parentId)
+              .map((task) => (
+                <TaskCard
+                  key={task.id}
+                  {...task}
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onDecompose={decomposeTask}
+                  isDecomposing={decomposingTasks.has(task.id)}
+                />
+              ))}
           </div>
 
           {completedTasks.length > 0 && (

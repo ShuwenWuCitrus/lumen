@@ -5,7 +5,9 @@ import en from "@/i18n/locales/en";
 import zh from "@/i18n/locales/zh";
 
 type Language = "en" | "zh";
-type Translations = typeof en;
+type Translations =
+  | typeof import("@/i18n/locales/en").default
+  | typeof import("@/i18n/locales/zh").default;
 
 interface LanguageContextType {
   language: Language;
