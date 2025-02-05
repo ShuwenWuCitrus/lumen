@@ -46,6 +46,11 @@ export default {
     whatNext: "干得好！接下来想做什么？",
     suggestNextStep: "✨ 建议下一步",
     doneForNow: "👍 先到这里",
+    stepLabel: "步骤 {number}",
+    skipButton: "跳过此步骤",
+    doneButton: "完成任务",
+    stepProgress: "{current} / {total}",
+    taskCompleted: "所有步骤已完成！",
   },
   notes: {
     title: "记录思绪",

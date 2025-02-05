@@ -11,18 +11,28 @@ export async function POST(request: Request) {
 
     const prompt =
       language === "zh"
-        ? `作为一个 ADHD 任务分解助手，请为任务"${task}"提供3个可能的第一步建议。
-         每个建议应该简单、具体、可执行，并包含预估时间（1-5分钟）。
-         请使用以下格式：
-         1️⃣ **具体建议1** (X分钟)
-         2️⃣ **具体建议2** (X分钟)
-         3️⃣ **具体建议3** (X分钟)`
-        : `As an ADHD task breakdown assistant, provide 3 possible first steps for the task "${task}".
-         Each suggestion should be simple, specific, actionable, and include an estimated time (1-5 minutes).
-         Use this format:
-         1️⃣ **Specific suggestion 1** (X min)
-         2️⃣ **Specific suggestion 2** (X min)
-         3️⃣ **Specific suggestion 3** (X min)`;
+        ? `作为一个 ADHD 任务分解助手，请将任务"${task}"分解成5-7个具体的步骤。
+           每个步骤应该：
+           1. 简单、具体、可执行
+           2. 预估完成时间（1-5分钟）
+           3. 按照从易到难的顺序排列
+           4. 考虑 ADHD 用户的注意力特点
+           
+           请使用以下格式：
+           1️⃣ **第一步** (X分钟)
+           2️⃣ **第二步** (X分钟)
+           以此类推...`
+        : `As an ADHD task breakdown assistant, please break down the task "${task}" into 5-7 specific steps.
+           Each step should be:
+           1. Simple, specific, and actionable
+           2. Include estimated time (1-5 minutes)
+           3. Arranged from easiest to most challenging
+           4. Consider ADHD attention patterns
+           
+           Use this format:
+           1️⃣ **First step** (X min)
+           2️⃣ **Second step** (X min)
+           And so on...`;
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
@@ -30,11 +40,11 @@ export async function POST(request: Request) {
       temperature: 0.7,
     });
 
-    const suggestions = completion.choices[0].message.content
-      ?.split(/[1-3]️⃣/)
+    const steps = completion.choices[0].message.content
+      ?.split(/[1-9]️⃣/)
       .filter(Boolean)
-      .map((suggestion) => {
-        const match = suggestion.match(/\*\*(.*?)\*\*\s*\((\d+).*?\)/);
+      .map((step) => {
+        const match = step.match(/\*\*(.*?)\*\*\s*\((\d+).*?\)/);
         if (match) {
           return {
             text: match[1].trim(),
@@ -45,7 +55,7 @@ export async function POST(request: Request) {
       })
       .filter(Boolean);
 
-    return NextResponse.json({ suggestions });
+    return NextResponse.json({ steps });
   } catch (error) {
     console.error("Error:", error);
     return NextResponse.json(

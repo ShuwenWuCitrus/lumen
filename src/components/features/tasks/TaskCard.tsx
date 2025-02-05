@@ -5,121 +5,134 @@ import { Card } from "@/components/common/Card";
 import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/cn";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect } from "react";
-
-interface Suggestion {
-  text: string;
-  time: number;
-}
+import { useState } from "react";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps extends Task {
-  isFirstStep?: boolean;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (id: string, title: string) => void;
-  onDecompose?: (
-    taskId: string,
-    taskText: string,
-    previousSteps?: string[]
-  ) => Promise<void>;
+  onEdit: (id: string, title: string, update: Partial<Task>) => void;
+  onCompleteStep: (id: string) => void;
+  onSkipStep: (id: string) => void;
   isDecomposing?: boolean;
-  hasFirstStep?: boolean;
-  suggestions: Suggestion[];
-  selectedTaskId: string;
-  renderFirstStepButton?: React.ReactNode;
-  onSelectStep?: (id: string) => void;
-  isSelected?: boolean;
 }
 
 export function TaskCard({
   id,
   title,
   completed,
-  subtasks,
-  parentId,
-  isFirstStep,
+  steps,
+  currentStepIndex,
+  completedSteps = [],
+  skippedSteps = [],
   onToggle,
   onDelete,
   onEdit,
-  onDecompose,
-  isDecomposing,
-  hasFirstStep: taskHasFirstStep,
-  suggestions,
-  selectedTaskId,
-  renderFirstStepButton,
-  onSelectStep,
-  isSelected,
+  onCompleteStep,
+  onSkipStep,
 }: TaskCardProps) {
   const { t } = useLanguage();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState(title);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
 
-  const hasMoreSubtasks = subtasks && subtasks.length > 3;
-  const visibleSubtasks =
-    mounted && hasMoreSubtasks && !isExpanded
-      ? subtasks.slice(0, 3)
-      : subtasks || [];
-
-  const handleSuggestStep = async () => {
-    if (!onDecompose) return;
-    try {
-      await onDecompose(id, title);
-    } catch (error) {
-      console.error(error);
-    }
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
   };
 
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editedTitle.trim() === "") return;
-    onEdit(id, editedTitle.trim());
+    onEdit(id, editedTitle.trim(), {
+      currentStepIndex: currentStepIndex,
+      completedSteps: completedSteps,
+    });
     setIsEditing(false);
   };
 
+  const currentStep = steps?.[currentStepIndex];
+  const isLastStep = currentStepIndex === (steps?.length ?? 0) - 1;
+  const hasSteps = steps?.length > 0;
+
+  const handleSkip = () => {
+    onSkipStep(id);
+    if (isLastStep) {
+      onToggle(id); // 在最后一步跳过时直接完成任务
+    }
+  };
+
+  const handleUndoStep = () => {
+    if (currentStepIndex > 0) {
+      // Remove the last completed or skipped step
+      const lastCompletedIndex = completedSteps[completedSteps.length - 1];
+      const lastSkippedIndex = skippedSteps[skippedSteps.length - 1];
+
+      if (lastCompletedIndex === currentStepIndex - 1) {
+        const newCompletedSteps = [...completedSteps];
+        newCompletedSteps.pop();
+        onEdit(id, title, {
+          currentStepIndex: currentStepIndex - 1,
+          completedSteps: newCompletedSteps,
+        });
+      } else if (lastSkippedIndex === currentStepIndex - 1) {
+        const newSkippedSteps = [...skippedSteps];
+        newSkippedSteps.pop();
+        onEdit(id, title, {
+          currentStepIndex: currentStepIndex - 1,
+          skippedSteps: newSkippedSteps,
+        });
+      }
+    }
+  };
+
   return (
-    <div className={cn("space-y-2", { "ml-6": parentId })}>
-      <Card
-        className={cn(
-          "flex items-center gap-4 transition-all",
-          parentId && "bg-gray-50/50 !shadow-sm py-2",
-          completed && "opacity-60",
-          isSelected && "border-primary bg-primary-50"
-        )}
-      >
-        {(!isFirstStep || !completed) && (
-          <button
-            onClick={() => onToggle(id)}
-            className={cn(
-              "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
-              parentId && "w-5 h-5",
-              completed
-                ? "bg-primary border-primary text-white"
-                : "border-gray-300 hover:border-primary"
-            )}
-          >
-            {completed && (
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
-            )}
-          </button>
-        )}
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex flex-col gap-4 transition-all cursor-move",
+        completed && "opacity-60",
+        isDragging && "shadow-lg scale-105 bg-white/90 rotate-1"
+      )}
+      {...attributes}
+      {...listeners}
+    >
+      <div className="flex items-center gap-4">
+        <button
+          onClick={() => onToggle(id)}
+          className={cn(
+            "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
+            completed
+              ? "bg-primary border-primary text-white"
+              : "border-gray-300 hover:border-primary"
+          )}
+        >
+          {completed && (
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </button>
 
         {isEditing ? (
           <form onSubmit={handleEditSubmit} className="flex-1">
@@ -144,36 +157,13 @@ export function TaskCard({
             className={cn("flex-1", {
               "text-gray-400 line-through": completed,
               "text-gray-700": !completed,
-              "text-sm": parentId,
             })}
           >
             {title}
           </span>
         )}
 
-        {renderFirstStepButton}
-
         <div className="flex items-center gap-2">
-          {!parentId &&
-            !completed &&
-            (!suggestions.length || selectedTaskId !== id) && (
-              <Button
-                variant="secondary"
-                onClick={handleSuggestStep}
-                isLoading={isDecomposing}
-                className={cn(
-                  "!px-2.5 !py-1 text-sm",
-                  taskHasFirstStep
-                    ? "text-primary border-primary bg-primary-50 hover:bg-primary-100"
-                    : "text-gray-600 hover:text-primary-dark bg-gray-50 hover:bg-gray-100 border-gray-200"
-                )}
-              >
-                {taskHasFirstStep
-                  ? t.tasks.redecomposeButton
-                  : t.tasks.suggestStepButton}
-              </Button>
-            )}
-
           <Button
             variant="secondary"
             onClick={() => setIsEditing(true)}
@@ -222,49 +212,66 @@ export function TaskCard({
             </svg>
           </Button>
         </div>
-      </Card>
+      </div>
 
-      {subtasks && subtasks.length > 0 && (
-        <div className="space-y-2">
-          <div className="space-y-2 animate-fadeIn">
-            {visibleSubtasks.map((subtask) => (
-              <TaskCard
-                key={subtask.id}
-                {...subtask}
-                onToggle={onToggle}
-                onDelete={onDelete}
-                onEdit={onEdit}
-                suggestions={suggestions}
-                selectedTaskId={selectedTaskId}
-                onSelectStep={onSelectStep}
-                isSelected={isSelected}
-                renderFirstStepButton={
-                  subtask.isFirstStep &&
-                  subtask.completed && (
-                    <span className="text-sm text-green-600 whitespace-nowrap ml-auto">
-                      {t.tasks.stepCompleted}
-                    </span>
-                  )
-                }
-              />
-            ))}
+      {hasSteps && !completed && (
+        <div className="border-t pt-4 mt-2">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-sm text-gray-500">
+              {t.tasks.stepLabel.replace(
+                "{number}",
+                String(currentStepIndex + 1)
+              )}
+              <span className="text-gray-400"> / {steps.length}</span>
+            </div>
+            <div className="flex gap-2">
+              {currentStepIndex > 0 && (
+                <Button
+                  variant="secondary"
+                  onClick={handleUndoStep}
+                  className="!py-1.5 !px-3 text-sm"
+                >
+                  ↩️ {t.tasks.undoButton}
+                </Button>
+              )}
+              <Button
+                variant="secondary"
+                onClick={handleSkip}
+                className="!py-1.5 !px-3 text-sm"
+              >
+                {t.tasks.skipButton}
+              </Button>
+              <Button
+                onClick={() => onCompleteStep(id)}
+                className="!py-1.5 !px-3 text-sm bg-green-600 hover:bg-green-700 text-white"
+              >
+                {isLastStep ? t.tasks.doneButton : t.tasks.completeStep}
+              </Button>
+            </div>
           </div>
-
-          {hasMoreSubtasks && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="ml-6 text-sm text-gray-500 hover:text-primary-dark transition-colors"
-            >
-              {isExpanded
-                ? t.tasks.showLessButton
-                : t.tasks.showMoreButton.replace(
-                    "{count}",
-                    String(subtasks.length - 3)
-                  )}
-            </button>
-          )}
+          <p className="text-gray-700">{currentStep}</p>
         </div>
       )}
-    </div>
+
+      {hasSteps && (
+        <div className="flex gap-1 mt-2">
+          {steps.map((_, index) => (
+            <div
+              key={index}
+              className={cn(
+                "flex-1 h-1 rounded-full",
+                completedSteps.includes(index)
+                  ? "bg-green-500"
+                  : skippedSteps.includes(index)
+                  ? "bg-gray-300"
+                  : index === currentStepIndex
+                  ? "bg-primary"
+                  : "bg-gray-100"
+              )}
+            />
+          ))}
+        </div>
+      )}
+    </Card>
   );
 }
