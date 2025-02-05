@@ -2,20 +2,157 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  @apply text-gray-700;
+  background: linear-gradient(
+    135deg,
+    theme("colors.background.light") 0%,
+    theme("colors.background.DEFAULT") 50%,
+    theme("colors.background.dark") 100%
+  );
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer components {
+  .nav-link {
+    @apply px-4 py-2 rounded-xl transition-colors hover:bg-primary-light/20;
+  }
+
+  .nav-link.active {
+    @apply bg-primary-light/30 text-primary-dark;
+  }
+
+  .mood-tag {
+    @apply px-3 py-1.5 rounded-full text-sm transition-colors;
+  }
+
+  .mood-tag.procrastination {
+    @apply bg-mood-procrastination/20 text-mood-procrastination;
+  }
+
+  .mood-tag.focus {
+    @apply bg-mood-focus/20 text-mood-focus;
+  }
+
+  .mood-tag.anxiety {
+    @apply bg-mood-anxiety/20 text-mood-anxiety;
+  }
+
+  .mood-tag.energetic {
+    @apply bg-mood-energetic/20 text-mood-energetic;
+  }
+
+  .mood-tag.calm {
+    @apply bg-mood-calm/20 text-mood-calm;
+  }
+
+  .input-field {
+    @apply w-full px-5 py-3 rounded-xl border border-gray-200 
+    focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all;
+  }
+
+  .btn-primary {
+    @apply px-6 py-3 bg-primary text-white rounded-xl 
+    hover:bg-primary-dark transition-all hover:shadow-lg hover:shadow-primary/20
+    active:transform active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply px-6 py-3 bg-secondary-light text-secondary-dark rounded-xl 
+    hover:bg-secondary transition-all hover:shadow-lg hover:shadow-secondary/20
+    active:transform active:scale-95;
+  }
+
+  .card {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all
+    hover:transform hover:scale-[1.02] hover:-translate-y-0.5;
+  }
+
+  /* 新增：心情选择按钮样式 */
+  .mood-select {
+    @apply w-full p-3 rounded-xl border border-gray-200 
+    focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all;
+  }
+
+  .mood-option {
+    @apply px-4 py-2.5 rounded-xl transition-colors cursor-pointer;
+  }
+
+  .mood-option[data-mood="procrastination"] {
+    @apply hover:bg-mood-procrastination/10;
+  }
+
+  .mood-option[data-mood="focus"] {
+    @apply hover:bg-mood-focus/10;
+  }
+
+  .mood-option[data-mood="anxiety"] {
+    @apply hover:bg-mood-anxiety/10;
+  }
+
+  .mood-option[data-mood="energetic"] {
+    @apply hover:bg-mood-energetic/10;
+  }
+
+  .mood-option[data-mood="calm"] {
+    @apply hover:bg-mood-calm/10;
+  }
+
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-dark to-secondary;
+  }
+
+  .subtitle {
+    @apply font-light text-gray-500;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    height: var(--expanded-height);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+    height: var(--expanded-height);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+    height: 0;
+  }
+}
+
+@layer utilities {
+  .animate-fadeIn {
+    animation: fadeIn 0.2s ease-out forwards;
+  }
+
+  .animate-slideDown {
+    animation: slideDown 0.2s ease-out forwards;
+  }
+
+  .animate-slideUp {
+    animation: slideUp 0.2s ease-out forwards;
+  }
 }
