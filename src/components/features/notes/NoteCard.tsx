@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Card } from "@/components/common/Card";
 import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/cn";
-import { useLanguage } from "@/contexts/LanguageContext";
 import { formatDate } from "@/utils/formatDate";
 
 interface NoteCardProps {
@@ -14,15 +13,8 @@ interface NoteCardProps {
   createdAt: string;
   onDelete: (id: string) => void;
   onEdit: (id: string, content: string) => void;
+  getMoodIcon: (mood: string) => string;
 }
-
-const moodColors = {
-  procrastination: "bg-orange-100 text-orange-700 border-orange-200",
-  distracted: "bg-purple-100 text-purple-700 border-purple-200",
-  hyperfocus: "bg-blue-100 text-blue-700 border-blue-200",
-  anxious: "bg-red-100 text-red-700 border-red-200",
-  energetic: "bg-green-100 text-green-700 border-green-200",
-} as const;
 
 export default function NoteCard({
   id,
@@ -31,8 +23,8 @@ export default function NoteCard({
   createdAt,
   onDelete,
   onEdit,
+  getMoodIcon,
 }: NoteCardProps) {
-  const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState(content);
   const formattedDate = formatDate(createdAt);
@@ -45,111 +37,85 @@ export default function NoteCard({
   };
 
   return (
-    <Card className="group h-full flex flex-col hover:shadow-md transition-all duration-200">
-      <div className="p-4 flex flex-col flex-1">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <span
-            className={cn(
-              "px-2 py-1 text-sm rounded-md border",
-              moodColors[mood as keyof typeof moodColors]
-            )}
-          >
-            🔖 {t.notes.moods[mood as keyof typeof t.notes.moods]}
-          </span>
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <Button
-              variant="secondary"
-              onClick={() => setIsEditing(true)}
-              className="!p-1.5 text-gray-400 hover:text-primary
-                bg-white hover:bg-primary-50
-                transition-all duration-200
-                border border-gray-200 hover:border-primary-200"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </Button>
-            <Button
-              variant="secondary"
-              onClick={() => onDelete(id)}
-              className="!p-1.5 text-gray-400 hover:text-rose-500
-                bg-white hover:bg-rose-50
-                transition-all duration-200
-                border border-gray-200 hover:border-rose-200"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </Button>
+    <Card
+      className={cn(
+        "group h-full transition-all duration-300 hover:-rotate-1 hover:scale-[1.02]",
+        "border-2 hover:border-primary/20"
+      )}
+    >
+      <div className="relative p-4">
+        {/* 心情表情 - 右上角 */}
+        {mood && mood !== "neutral" && (
+          <div className="absolute -top-3 -right-2 text-2xl transform rotate-12">
+            {getMoodIcon(mood)}
           </div>
-        </div>
+        )}
 
-        {/* Content */}
-        <div className="flex-1">
+        {/* 内容区域 */}
+        <div className="mt-2">
           {isEditing ? (
-            <form onSubmit={handleEditSubmit} className="h-full">
+            <form onSubmit={handleEditSubmit}>
               <textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                className="w-full h-full min-h-[120px] p-2 rounded-lg
+                className="w-full min-h-[100px] p-2 rounded-lg
                   border border-gray-200 focus:border-primary
                   text-gray-700 text-base focus:outline-none
                   resize-none"
                 autoFocus
               />
-              <div className="flex justify-end gap-2 mt-4">
+              <div className="flex justify-end gap-2 mt-2">
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={() => {
                     setIsEditing(false);
-                    setEditedContent(content); // 取消时恢复原内容
+                    setEditedContent(content);
                   }}
-                  className="!py-1 !px-3 text-sm"
+                  className="text-sm px-3 py-1"
                 >
-                  {t.common.cancel}
+                  取消
                 </Button>
                 <Button
                   type="submit"
-                  variant="secondary"
-                  className="!py-1 !px-3 text-sm text-primary hover:text-primary-dark
-                    bg-primary-50 hover:bg-primary-100
-                    border-primary-200 hover:border-primary-300"
+                  className="text-sm px-3 py-1 bg-primary/10 text-primary hover:bg-primary/20"
                 >
-                  {t.common.save}
+                  保存
                 </Button>
               </div>
             </form>
           ) : (
-            <p className="text-gray-700 text-base whitespace-pre-wrap">
-              {content}
-            </p>
+            <div className="relative min-h-[60px]">
+              {/* 操作按钮 - 悬浮时显示 */}
+              <div className="absolute -top-1 right-0 opacity-0 group-hover:opacity-100 transition-opacity flex gap-1 bg-white/80 backdrop-blur-sm rounded-lg p-1">
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="p-1.5 text-gray-400 hover:text-primary rounded-full
+                    hover:bg-primary/10 transition-colors"
+                >
+                  ✏️
+                </button>
+                <button
+                  onClick={() => onDelete(id)}
+                  className="p-1.5 text-gray-400 hover:text-rose-500 rounded-full
+                    hover:bg-rose-50 transition-colors"
+                >
+                  🗑️
+                </button>
+              </div>
+
+              {/* 笔记内容 */}
+              <p className="text-gray-700 text-lg whitespace-pre-wrap pr-16">
+                {content}
+              </p>
+            </div>
           )}
         </div>
 
-        {/* Footer */}
-        <div className="mt-4 text-sm text-gray-400">{formattedDate}</div>
+        {/* 时间戳 */}
+        <div className="mt-3 text-sm text-gray-400 opacity-50 group-hover:opacity-100 transition-opacity">
+          {formattedDate}
+        </div>
       </div>
     </Card>
   );

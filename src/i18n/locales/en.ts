@@ -78,6 +78,12 @@ export default {
     selectMood: "How are you feeling?",
     content: "What's on your mind?",
     saving: "Saving...",
+    writeFirst: "Write your first thought!",
+    confirmDelete: "Are you sure you want to delete this note?",
+    cancel: "Cancel",
+    save: "Save",
+    edit: "Edit",
+    delete: "Delete",
   },
   community: {
     title: "Community",
