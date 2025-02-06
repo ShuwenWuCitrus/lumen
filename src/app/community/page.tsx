@@ -1,76 +1,111 @@
 "use client";
 
 import { useState } from "react";
-import CommunityPost from "@/components/features/community/CommunityPost";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { formatDate } from "@/utils/formatDate";
+import { CommunityPost } from "@/components/features/community/CommunityPost";
+import { CreatePost } from "@/components/features/community/CreatePost";
+import { CategoryFilters } from "@/components/features/community/CategoryFilters";
+import { Category, Post } from "@/types/community";
 
-interface Post {
-  id: string;
-  content: string;
-  author: string;
-  createdAt: string;
-}
+// Dummy data for demonstration
+const dummyPosts: Post[] = [
+  {
+    id: "1",
+    author: "MindfulExplorer",
+    content:
+      "Finally found a system that works for my ADHD brain! Breaking tasks into 25-minute chunks with short breaks has been a game-changer. Anyone else use the Pomodoro technique?",
+    createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    likes: 24,
+    comments: 8,
+    category: "Tips",
+  },
+  {
+    id: "2",
+    author: "CreativeSpirit",
+    content:
+      "Just wanted to share a small victory - I managed to complete my entire morning routine without getting distracted! It's the little wins that count. ✨",
+    createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
+    likes: 42,
+    comments: 12,
+    category: "Victories",
+  },
+  {
+    id: "3",
+    author: "QuietDreamer",
+    content:
+      "Does anyone else feel overwhelmed by loud environments? Looking for tips on how to stay focused in noisy places while working.",
+    createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+    likes: 18,
+    comments: 15,
+    category: "Questions",
+  },
+];
 
 export default function CommunityPage() {
   const { t } = useLanguage();
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [content, setContent] = useState("");
-  const [author, setAuthor] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const [posts, setPosts] = useState<Post[]>(dummyPosts);
 
-  const addPost = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!content.trim() || !author.trim()) return;
-
+  const handleCreatePost = (
+    newPost: Omit<Post, "id" | "createdAt" | "likes" | "comments">
+  ) => {
     const post: Post = {
+      ...newPost,
       id: crypto.randomUUID(),
-      content: content.trim(),
-      author: author.trim(),
-      createdAt: formatDate(new Date()),
+      createdAt: new Date(),
+      likes: 0,
+      comments: 0,
     };
-
     setPosts([post, ...posts]);
-    setContent("");
   };
 
-  const deletePost = (id: string) => {
-    setPosts(posts.filter((post) => post.id !== id));
+  const handleLike = (id: string) => {
+    setPosts(
+      posts.map((post) =>
+        post.id === id ? { ...post, likes: post.likes + 1 } : post
+      )
+    );
   };
+
+  const handleComment = (id: string) => {
+    // In a real app, this would open a comment dialog
+    console.log("Open comment dialog for post:", id);
+  };
+
+  const filteredPosts =
+    selectedCategory === "All"
+      ? posts
+      : posts.filter((post) => post.category === selectedCategory);
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      <div className="flex-1 overflow-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-3xl font-bold text-primary-dark mb-8">
+    <div className="flex-1 overflow-y-auto bg-background">
+      <div className="container-base py-lg">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="gradient-text text-4xl font-bold mb-md">
             {t.community.title}
           </h1>
 
-          <form onSubmit={addPost} className="mb-8">
-            <div className="mb-4">
-              <input
-                type="text"
-                value={author}
-                onChange={(e) => setAuthor(e.target.value)}
-                placeholder={t.community.namePlaceholder}
-                className="input-field mb-4"
+          <CreatePost onCreatePost={handleCreatePost} />
+
+          <CategoryFilters
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+
+          <div className="space-y-md pb-xl">
+            {filteredPosts.map((post) => (
+              <CommunityPost
+                key={post.id}
+                id={post.id}
+                author={post.author}
+                content={post.content}
+                createdAt={post.createdAt}
+                likes={post.likes}
+                comments={post.comments}
+                category={post.category}
+                onLike={handleLike}
+                onComment={handleComment}
               />
-
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder={t.community.contentPlaceholder}
-                className="input-field min-h-[120px]"
-              />
-            </div>
-
-            <button type="submit" className="btn-primary w-full">
-              {t.community.postButton}
-            </button>
-          </form>
-
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <CommunityPost key={post.id} {...post} onDelete={deletePost} />
             ))}
           </div>
         </div>
