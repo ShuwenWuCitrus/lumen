@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { zhCN, enUS } from "date-fns/locale";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/utils/cn";
+import { PostCategory, getCategoryColor } from "@/types/community";
 
 interface CommunityPostProps {
   id: string;
@@ -13,7 +14,7 @@ interface CommunityPostProps {
   createdAt: Date;
   likes: number;
   comments: number;
-  category: "Tips" | "Support" | "Questions" | "Victories" | "Resources";
+  category: PostCategory;
   onLike?: (id: string) => void;
   onComment?: (id: string) => void;
 }
@@ -29,30 +30,13 @@ export function CommunityPost({
   onLike,
   onComment,
 }: CommunityPostProps) {
-  const { language } = useLanguage();
+  const { t, language } = useLanguage();
 
   const dateLocale = language === "zh" ? zhCN : enUS;
   const timeAgo = formatDistanceToNow(createdAt, {
     addSuffix: true,
     locale: dateLocale,
   });
-
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "Tips":
-        return "text-primary-dark bg-primary-light/20";
-      case "Support":
-        return "text-secondary-dark bg-secondary-light/20";
-      case "Questions":
-        return "text-accent-blue bg-accent-blue/20";
-      case "Victories":
-        return "text-accent-yellow bg-accent-yellow/20";
-      case "Resources":
-        return "text-accent-pink bg-accent-pink/20";
-      default:
-        return "text-gray-600 bg-gray-50";
-    }
-  };
 
   return (
     <Card>
@@ -73,6 +57,7 @@ export function CommunityPost({
                 onClick={() => onLike?.(id)}
                 className="flex items-center gap-xs text-gray-500 hover:text-primary 
                   transition-colors"
+                aria-label={t.community.actions.like}
               >
                 <span className="text-lg">♡</span>
                 <span className="text-sm">{likes}</span>
@@ -81,6 +66,7 @@ export function CommunityPost({
                 onClick={() => onComment?.(id)}
                 className="flex items-center gap-xs text-gray-500 hover:text-primary 
                   transition-colors"
+                aria-label={t.community.actions.comment}
               >
                 <span className="text-lg">💬</span>
                 <span className="text-sm">{comments}</span>
@@ -92,7 +78,7 @@ export function CommunityPost({
                 getCategoryColor(category)
               )}
             >
-              #{category}
+              #{t.community.categories[category]}
             </span>
           </div>
         </div>

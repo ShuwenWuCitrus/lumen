@@ -9,6 +9,7 @@ export default {
     welcome: "Welcome to Lumen",
     description:
       "A platform helping ADHD users manage tasks, record thoughts, and find resonance",
+    startButton: "Start Your Journey",
     taskCard: {
       title: "Task Management",
       description:
@@ -21,6 +22,38 @@ export default {
     communityCard: {
       title: "Find Resonance",
       description: "Join a supportive community and share your story",
+    },
+    moodTracking: {
+      title: "Track Your Journey",
+      description: "Understand your patterns and celebrate your progress",
+      features: [
+        {
+          icon: "📊",
+          title: "Visual Mood Patterns",
+          description:
+            "See your emotional journey through beautiful visualizations",
+        },
+        {
+          icon: "🎯",
+          title: "Daily Reflections",
+          description: "Build self-awareness with guided daily check-ins",
+        },
+        {
+          icon: "✨",
+          title: "Celebrate Progress",
+          description: "Track your wins and see how far you've come",
+        },
+      ],
+    },
+    communityStories: {
+      title: "Community Stories",
+      roles: {
+        advocate: "ADHD Advocate",
+        creative: "Creative Mind",
+        student: "Student",
+        professional: "Professional",
+        parent: "Parent",
+      },
     },
   },
   tasks: {
@@ -105,15 +138,53 @@ export default {
     namePlaceholder: "Your nickname...",
     contentPlaceholder: "Share your story...",
     postButton: "Post",
+    categories: {
+      all: "All",
+      tips: "Tips",
+      support: "Support",
+      questions: "Questions",
+      victories: "Victories",
+      resources: "Resources",
+    },
+    actions: {
+      like: "Like",
+      comment: "Comment",
+      share: "Share",
+    },
   },
   footer: {
     about: "About Us",
     guide: "User Guide",
     privacy: "Privacy Policy",
+    sections: {
+      quickLinks: {
+        title: "Quick Links",
+        features: "Features",
+        resources: "Resources",
+        blog: "Blog",
+      },
+      support: {
+        title: "Support",
+        helpCenter: "Help Center",
+        guidelines: "Community Guidelines",
+        terms: "Terms of Service",
+      },
+      connect: {
+        title: "Connect",
+        twitter: "Twitter",
+        instagram: "Instagram",
+        linkedin: "LinkedIn",
+      },
+    },
+    copyright: "© 2024 Lumen. All rights reserved.",
+    slogan: "Empowering neurodivergent individuals through mindful technology",
   },
   common: {
     save: "Save",
     cancel: "Cancel",
     clear: "Clear",
+    loading: "Loading...",
+    error: "Error occurred",
+    success: "Success",
   },
 } as const;

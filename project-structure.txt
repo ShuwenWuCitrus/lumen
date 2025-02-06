@@ -1,0 +1,74 @@
+.
+├── ARCHITECTURE.md
+├── README.md
+├── eslint.config.mjs
+├── next-env.d.ts
+├── next.config.ts
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── postcss.config.mjs
+├── project-structure.txt
+├── public
+│   ├── file.svg
+│   ├── globe.svg
+│   ├── next.svg
+│   ├── vercel.svg
+│   └── window.svg
+├── src
+│   ├── app
+│   │   ├── api
+│   │   │   ├── decompose
+│   │   │   └── notes
+│   │   ├── community
+│   │   │   └── page.tsx
+│   │   ├── favicon.ico
+│   │   ├── globals.css
+│   │   ├── layout.tsx
+│   │   ├── notes
+│   │   │   └── page.tsx
+│   │   ├── page.tsx
+│   │   └── tasks
+│   │       └── page.tsx
+│   ├── components
+│   │   ├── common
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Input.tsx
+│   │   │   └── TextArea.tsx
+│   │   ├── features
+│   │   │   ├── community
+│   │   │   ├── notes
+│   │   │   └── tasks
+│   │   └── layout
+│   │       ├── Footer.tsx
+│   │       ├── LanguageSwitch.tsx
+│   │       ├── Navbar.tsx
+│   │       └── Providers.tsx
+│   ├── config
+│   ├── contexts
+│   │   └── LanguageContext.tsx
+│   ├── hooks
+│   │   └── useNotes.ts
+│   ├── i18n
+│   │   └── locales
+│   │       ├── en.ts
+│   │       └── zh.ts
+│   ├── lib
+│   │   └── utils.ts
+│   ├── mock
+│   │   └── moodData.ts
+│   ├── styles
+│   ├── types
+│   │   ├── community.ts
+│   │   ├── mood.ts
+│   │   ├── note.ts
+│   │   └── task.ts
+│   └── utils
+│       ├── cn.ts
+│       ├── formatDate.ts
+│       └── getMoodIcon.ts
+├── tailwind.config.ts
+└── tsconfig.json
+
+27 directories, 45 files

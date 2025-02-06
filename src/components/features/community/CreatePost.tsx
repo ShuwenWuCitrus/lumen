@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/utils/cn";
-import { Category, Post } from "@/types/community";
+import { Post, PostCategory } from "@/types/community";
 
 interface CreatePostProps {
   onCreatePost: (
@@ -11,34 +11,34 @@ interface CreatePostProps {
   ) => void;
 }
 
+const CATEGORIES: PostCategory[] = [
+  "support",
+  "tips",
+  "victories",
+  "questions",
+  "resources",
+];
+
 export function CreatePost({ onCreatePost }: CreatePostProps) {
   const { t } = useLanguage();
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState<Exclude<Category, "All">>("Support");
+  const [category, setCategory] = useState<PostCategory>("support");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const categories: Exclude<Category, "All">[] = [
-    "Support",
-    "Tips",
-    "Victories",
-    "Questions",
-    "Resources",
-  ];
-
-  const getCategoryColor = (category: Category) => {
-    switch (category) {
-      case "Tips":
-        return "text-primary-dark bg-primary-light/20 hover:bg-primary-light/30";
-      case "Support":
-        return "text-secondary-dark bg-secondary-light/20 hover:bg-secondary-light/30";
-      case "Questions":
-        return "text-accent-blue bg-accent-blue/20 hover:bg-accent-blue/30";
-      case "Victories":
-        return "text-accent-yellow bg-accent-yellow/20 hover:bg-accent-yellow/30";
-      case "Resources":
-        return "text-accent-pink bg-accent-pink/20 hover:bg-accent-pink/30";
+  const getCategoryStyles = (cat: PostCategory) => {
+    switch (cat) {
+      case "tips":
+        return "text-primary-dark bg-primary-light/10 hover:bg-primary-light/20";
+      case "support":
+        return "text-secondary-dark bg-secondary-light/10 hover:bg-secondary-light/20";
+      case "questions":
+        return "text-accent-blue bg-accent-blue/10 hover:bg-accent-blue/20";
+      case "victories":
+        return "text-accent-yellow bg-accent-yellow/10 hover:bg-accent-yellow/20";
+      case "resources":
+        return "text-accent-pink bg-accent-pink/10 hover:bg-accent-pink/20";
       default:
-        return "text-primary bg-primary-light/10 hover:bg-primary-light/20";
+        return "text-gray-600 bg-gray-50 hover:bg-gray-100";
     }
   };
 
@@ -49,7 +49,7 @@ export function CreatePost({ onCreatePost }: CreatePostProps) {
     onCreatePost({
       content: content.trim(),
       category,
-      author: "CurrentUser", // In real app, get from auth context
+      author: "CurrentUser", // 在实际应用中，从认证上下文获取
     });
 
     setContent("");
@@ -77,19 +77,19 @@ export function CreatePost({ onCreatePost }: CreatePostProps) {
 
         {isExpanded && (
           <div className="flex flex-wrap items-center gap-sm">
-            <div className="flex-1 flex flex-wrap gap-2">
-              {categories.map((cat) => (
+            <div className="flex-1 flex flex-wrap gap-sm">
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setCategory(cat)}
                   className={cn(
-                    "px-sm py-xs rounded-full text-sm transition-colors",
+                    "px-md py-sm rounded-full text-sm font-medium transition-colors",
                     category === cat
-                      ? getCategoryColor(cat)
+                      ? getCategoryStyles(cat)
                       : "text-gray-500 hover:bg-gray-100"
                   )}
                 >
-                  {cat}
+                  {t.community.categories[cat]}
                 </button>
               ))}
             </div>

@@ -8,6 +8,7 @@ export default {
   home: {
     welcome: "欢迎来到 Lumen",
     description: "一个帮助 ADHD 用户管理任务、记录思绪、找到共鸣的平台",
+    startButton: "开启旅程",
     taskCard: {
       title: "任务管理",
       description: "简单直观的任务管理，帮助你专注于最重要的事情",
@@ -19,6 +20,37 @@ export default {
     communityCard: {
       title: "寻找共鸣",
       description: "加入充满理解和支持的社区，分享你的故事",
+    },
+    moodTracking: {
+      title: "追踪你的旅程",
+      description: "了解你的模式，庆祝你的进步",
+      features: [
+        {
+          icon: "📊",
+          title: "可视化情绪模式",
+          description: "通过精美的可视化看见你的情绪旅程",
+        },
+        {
+          icon: "🎯",
+          title: "每日反思",
+          description: "通过引导式每日签到建立自我认知",
+        },
+        {
+          icon: "✨",
+          title: "庆祝进步",
+          description: "记录你的成就，看见自己的成长",
+        },
+      ],
+    },
+    communityStories: {
+      title: "社区故事",
+      roles: {
+        advocate: "ADHD 倡导者",
+        creative: "创意工作者",
+        student: "学生",
+        professional: "职场人士",
+        parent: "家长",
+      },
     },
   },
   tasks: {
@@ -94,15 +126,53 @@ export default {
     namePlaceholder: "你的昵称...",
     contentPlaceholder: "分享你的故事...",
     postButton: "发布",
+    categories: {
+      all: "全部",
+      tips: "小贴士",
+      support: "互助",
+      questions: "问答",
+      victories: "小胜利",
+      resources: "资源",
+    },
+    actions: {
+      like: "点赞",
+      comment: "评论",
+      share: "分享",
+    },
   },
   footer: {
     about: "关于我们",
     guide: "使用指南",
     privacy: "隐私政策",
+    sections: {
+      quickLinks: {
+        title: "快速链接",
+        features: "功能介绍",
+        resources: "资源",
+        blog: "博客",
+      },
+      support: {
+        title: "支持",
+        helpCenter: "帮助中心",
+        guidelines: "社区准则",
+        terms: "服务条款",
+      },
+      connect: {
+        title: "关注我们",
+        twitter: "Twitter",
+        instagram: "Instagram",
+        linkedin: "LinkedIn",
+      },
+    },
+    copyright: "© 2024 Lumen. 保留所有权利。",
+    slogan: "通过正念科技赋能神经多样性群体",
   },
   common: {
     save: "保存",
     cancel: "取消",
     clear: "清除",
+    loading: "加载中...",
+    error: "出错了",
+    success: "成功",
   },
 } as const;

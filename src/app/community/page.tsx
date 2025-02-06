@@ -5,9 +5,9 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { CommunityPost } from "@/components/features/community/CommunityPost";
 import { CreatePost } from "@/components/features/community/CreatePost";
 import { CategoryFilters } from "@/components/features/community/CategoryFilters";
-import { Category, Post } from "@/types/community";
+import { Category, Post, PostCategory } from "@/types/community";
 
-// Dummy data for demonstration
+// 示例数据
 const dummyPosts: Post[] = [
   {
     id: "1",
@@ -17,7 +17,7 @@ const dummyPosts: Post[] = [
     createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
     likes: 24,
     comments: 8,
-    category: "Tips",
+    category: "tips",
   },
   {
     id: "2",
@@ -27,7 +27,7 @@ const dummyPosts: Post[] = [
     createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 hours ago
     likes: 42,
     comments: 12,
-    category: "Victories",
+    category: "victories",
   },
   {
     id: "3",
@@ -37,13 +37,33 @@ const dummyPosts: Post[] = [
     createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
     likes: 18,
     comments: 15,
-    category: "Questions",
+    category: "questions",
+  },
+  {
+    id: "4",
+    author: "ADHDAdvocate",
+    content:
+      "Found this amazing app for time blocking! It's been helping me stay on track with my daily tasks. Happy to share more details if anyone's interested.",
+    createdAt: new Date(Date.now() - 8 * 60 * 60 * 1000),
+    likes: 35,
+    comments: 20,
+    category: "resources",
+  },
+  {
+    id: "5",
+    author: "MindfulLearner",
+    content:
+      "Having a rough day with executive dysfunction. Could use some encouragement or tips from others who've been there. 💭",
+    createdAt: new Date(Date.now() - 10 * 60 * 60 * 1000),
+    likes: 28,
+    comments: 22,
+    category: "support",
   },
 ];
 
 export default function CommunityPage() {
   const { t } = useLanguage();
-  const [selectedCategory, setSelectedCategory] = useState<Category>("All");
+  const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [posts, setPosts] = useState<Post[]>(dummyPosts);
 
   const handleCreatePost = (
@@ -68,12 +88,16 @@ export default function CommunityPage() {
   };
 
   const handleComment = (id: string) => {
-    // In a real app, this would open a comment dialog
-    console.log("Open comment dialog for post:", id);
+    setPosts(
+      posts.map((post) =>
+        post.id === id ? { ...post, comments: post.comments + 1 } : post
+      )
+    );
   };
 
+  // 过滤帖子
   const filteredPosts =
-    selectedCategory === "All"
+    selectedCategory === "all"
       ? posts
       : posts.filter((post) => post.category === selectedCategory);
 
@@ -96,13 +120,7 @@ export default function CommunityPage() {
             {filteredPosts.map((post) => (
               <CommunityPost
                 key={post.id}
-                id={post.id}
-                author={post.author}
-                content={post.content}
-                createdAt={post.createdAt}
-                likes={post.likes}
-                comments={post.comments}
-                category={post.category}
+                {...post}
                 onLike={handleLike}
                 onComment={handleComment}
               />
