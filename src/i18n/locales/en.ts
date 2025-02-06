@@ -80,6 +80,7 @@ export default {
     saving: "Saving...",
     writeFirst: "Write your first thought!",
     confirmDelete: "Are you sure you want to delete this note?",
+    noSearchResults: "No matching notes found",
     cancel: "Cancel",
     save: "Save",
     edit: "Edit",
@@ -113,5 +114,6 @@ export default {
   common: {
     save: "Save",
     cancel: "Cancel",
+    clear: "Clear",
   },
 } as const;

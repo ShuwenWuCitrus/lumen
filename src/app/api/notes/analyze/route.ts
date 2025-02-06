@@ -10,7 +10,7 @@ const openai = new OpenAI({
 
 export async function POST(request: Request) {
   try {
-    const { notes, timeRange, language } = await request.json();
+    const { notes } = await request.json();
 
     // 检查笔记数量是否足够
     if (notes.length < MIN_NOTES_FOR_ANALYSIS) {

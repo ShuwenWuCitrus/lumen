@@ -71,7 +71,7 @@ export function MoodSelector({
           >
             <div className="relative">
               {value}
-              {/* 小三角形 */}
+              {/* Triangle */}
               <div
                 className={cn(
                   "absolute -bottom-4 left-1/2 -translate-x-1/2",

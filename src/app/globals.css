@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Base styles */
 body {
   @apply text-gray-700;
   background: linear-gradient(
@@ -12,17 +13,86 @@ body {
   );
 }
 
+@layer base {
+  h1 {
+    @apply text-4xl font-bold mb-md;
+  }
+  h2 {
+    @apply text-3xl font-semibold mb-sm;
+  }
+  h3 {
+    @apply text-2xl font-medium mb-sm;
+  }
+  p {
+    @apply mb-sm;
+  }
+}
+
 @layer components {
+  /* Layout Components */
+  .container-base {
+    @apply max-w-7xl mx-auto px-sm md:px-md;
+  }
+
+  .section {
+    @apply py-lg md:py-xl;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-sm p-md
+    hover:shadow-md transition-all duration-200
+    hover:transform hover:scale-[1.02] hover:-translate-y-0.5;
+  }
+
+  /* Navigation Components */
   .nav-link {
-    @apply px-4 py-2 rounded-xl transition-colors hover:bg-primary-light/20;
+    @apply px-md py-sm rounded-lg transition-colors 
+    hover:bg-primary-light/20;
   }
 
   .nav-link.active {
     @apply bg-primary-light/30 text-primary-dark;
   }
 
+  /* Form Components */
+  .input-base {
+    @apply w-full px-md py-sm rounded-lg border border-gray-200 
+    focus:outline-none focus:border-primary focus:ring-2 
+    focus:ring-primary/10 transition-all;
+  }
+
+  .input-field {
+    @apply input-base;
+  }
+
+  .textarea {
+    @apply input-base min-h-[120px] resize-y;
+  }
+
+  /* Button Components */
+  .btn-base {
+    @apply px-md py-sm rounded-lg transition-all duration-200
+    active:transform active:scale-95 font-medium;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-primary text-white
+    hover:bg-primary-dark hover:shadow-lg hover:shadow-primary/20;
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-secondary-light text-secondary-dark
+    hover:bg-secondary hover:shadow-lg hover:shadow-secondary/20;
+  }
+
+  .btn-outline {
+    @apply btn-base border-2 border-primary text-primary
+    hover:bg-primary/10;
+  }
+
+  /* Mood Components */
   .mood-tag {
-    @apply px-3 py-1.5 rounded-full text-sm transition-colors;
+    @apply px-sm py-xs rounded-full text-sm transition-colors;
   }
 
   .mood-tag.procrastination {
@@ -45,36 +115,12 @@ body {
     @apply bg-mood-calm/20 text-mood-calm;
   }
 
-  .input-field {
-    @apply w-full px-5 py-3 rounded-xl border border-gray-200 
-    focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all;
-  }
-
-  .btn-primary {
-    @apply px-6 py-3 bg-primary text-white rounded-xl 
-    hover:bg-primary-dark transition-all hover:shadow-lg hover:shadow-primary/20
-    active:transform active:scale-95;
-  }
-
-  .btn-secondary {
-    @apply px-6 py-3 bg-secondary-light text-secondary-dark rounded-xl 
-    hover:bg-secondary transition-all hover:shadow-lg hover:shadow-secondary/20
-    active:transform active:scale-95;
-  }
-
-  .card {
-    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all
-    hover:transform hover:scale-[1.02] hover:-translate-y-0.5;
-  }
-
-  /* 新增：心情选择按钮样式 */
   .mood-select {
-    @apply w-full p-3 rounded-xl border border-gray-200 
-    focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all;
+    @apply input-base;
   }
 
   .mood-option {
-    @apply px-4 py-2.5 rounded-xl transition-colors cursor-pointer;
+    @apply px-md py-sm rounded-lg transition-colors cursor-pointer;
   }
 
   .mood-option[data-mood="procrastination"] {
@@ -97,8 +143,10 @@ body {
     @apply hover:bg-mood-calm/10;
   }
 
+  /* Typography Components */
   .gradient-text {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-primary-dark to-secondary;
+    @apply bg-clip-text text-transparent bg-gradient-to-r 
+    from-primary via-primary-dark to-secondary;
   }
 
   .subtitle {
@@ -106,6 +154,7 @@ body {
   }
 }
 
+/* Animations */
 @keyframes fadeIn {
   from {
     opacity: 0;

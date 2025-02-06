@@ -70,6 +70,7 @@ export default {
     saving: "保存中...",
     writeFirst: "写下第一个想法吧！",
     confirmDelete: "确定要删除这条笔记吗？",
+    noSearchResults: "没有找到匹配的笔记",
     cancel: "取消",
     save: "保存",
     edit: "编辑",
@@ -102,5 +103,6 @@ export default {
   common: {
     save: "保存",
     cancel: "取消",
+    clear: "清除",
   },
 } as const;

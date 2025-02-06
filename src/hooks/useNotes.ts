@@ -5,11 +5,6 @@ import { Note } from "@/types/note";
 const MIN_NOTES_FOR_ANALYSIS = 3;
 const STORAGE_KEY = "lumen_notes";
 
-interface BilingualText {
-  zh: string;
-  en: string;
-}
-
 interface AnalysisError {
   needMoreNotes: boolean;
   requiredCount: number;
