@@ -1,4 +1,4 @@
-export const getMoodIcon = (mood: string) => {
+export function getMoodIcon(mood: string): string {
   const icons = {
     procrastination: "🐌",
     distracted: "🦋",
@@ -8,4 +8,4 @@ export const getMoodIcon = (mood: string) => {
     neutral: "📝",
   } as const;
   return icons[mood as keyof typeof icons] || icons.neutral;
-};
+}

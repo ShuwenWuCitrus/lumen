@@ -84,6 +84,20 @@ export default {
     save: "Save",
     edit: "Edit",
     delete: "Delete",
+    analysis: {
+      sevenDays: "Mood Distribution (Last 7 Days)",
+      thirtyDays: "Mood Distribution (Last 30 Days)",
+      aiSummary: "AI Emotional Summary",
+      keywords: "Emotional Keywords",
+      reanalyze: "Reanalyze",
+      days: "days",
+      analyzing: "Analyzing your emotional patterns...",
+      needMore:
+        "Write {required} more notes to see your emotional analysis (currently {current})",
+      initialHint:
+        "Write {count} notes to unlock AI-powered emotional analysis!",
+      advice: "Suggestions for You",
+    },
   },
   community: {
     title: "Community",

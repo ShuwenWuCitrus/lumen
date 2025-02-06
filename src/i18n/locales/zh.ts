@@ -74,6 +74,19 @@ export default {
     save: "保存",
     edit: "编辑",
     delete: "删除",
+    analysis: {
+      sevenDays: "情绪分布（近7天）",
+      thirtyDays: "情绪分布（近30天）",
+      aiSummary: "AI情绪总结",
+      keywords: "情绪关键词",
+      reanalyze: "重新分析",
+      days: "天",
+      analyzing: "正在分析你的情绪变化...",
+      needMore:
+        "再记录 {required} 条笔记就能看到情绪分析啦（当前 {current} 条）",
+      initialHint: "记录 {count} 条笔记即可解锁 AI 情绪分析功能！",
+      advice: "给你的建议",
+    },
   },
   community: {
     title: "社区交流",

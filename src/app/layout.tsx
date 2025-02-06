@@ -27,6 +27,7 @@ export default function RootLayout({
       <LanguageAwareHtml>
         <body
           className={`${poppins.variable} h-screen flex flex-col font-sans`}
+          suppressHydrationWarning
         >
           <Navbar className="flex-none" />
           <div className="flex-1 flex flex-col overflow-hidden pt-16">
