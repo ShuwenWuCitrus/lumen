@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { TaskCard } from "@/components/features/tasks/TaskCard";
 import { TaskForm } from "@/components/features/tasks/TaskForm";
@@ -49,118 +49,130 @@ export default function TasksPage() {
     })
   );
 
-  const addTask = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTask.trim()) return;
+  const addTask = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!newTask.trim()) return;
 
-    const activeTasks = tasks.filter((task) => !task.completed);
-    if (activeTasks.length >= 3) {
-      alert(t.tasks.maxTasksWarning);
-      return;
-    }
-
-    const task: Task = {
-      id: crypto.randomUUID(),
-      title: newTask.trim(),
-      completed: false,
-      createdAt: new Date().toISOString(),
-      steps: [],
-      currentStepIndex: 0,
-      completedSteps: [],
-      skippedSteps: [],
-    };
-
-    setTasks([...tasks, task]);
-    setNewTask("");
-    decomposeTask(task.id, task.title);
-  };
-
-  const decomposeTask = async (taskId: string, taskText: string) => {
-    if (!taskText.trim()) return;
-
-    setDecomposingTasks((prev) => new Set(prev).add(taskId));
-    try {
-      const res = await fetch("/api/decompose", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          task: taskText,
-          language,
-          generateFullSteps: true,
-        }),
-      });
-
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-
-      const data = await res.json();
-      if (data.steps) {
-        setTasks((prevTasks) =>
-          prevTasks.map((task) =>
-            task.id === taskId
-              ? {
-                  ...task,
-                  steps: data.steps.map((s: Step) => s.text),
-                  estimatedTimes: data.steps.map((s: Step) => s.time),
-                  currentStepIndex: 0,
-                  completedSteps: [],
-                  skippedSteps: [],
-                }
-              : task
-          )
-        );
-        setDecomposingTasks((prev) => {
-          const next = new Set(prev);
-          next.delete(taskId);
-          return next;
-        });
+      const activeTasks = tasks.filter((task) => !task.completed);
+      if (activeTasks.length >= 3) {
+        alert(t.tasks.maxTasksWarning);
+        return;
       }
-    } catch (error) {
-      console.error(error);
-      alert(t.tasks.suggestError);
-    }
-  };
 
-  const toggleTask = (id: string) => {
-    console.log("Toggling task:", id);
+      const task: Task = {
+        id: crypto.randomUUID(),
+        title: newTask.trim(),
+        completed: false,
+        createdAt: new Date().toISOString(),
+        steps: [],
+        currentStepIndex: 0,
+        completedSteps: [],
+        skippedSteps: [],
+      };
+
+      setTasks((prevTasks) => [...prevTasks, task]);
+      setNewTask("");
+      decomposeTask(task.id, task.title);
+    },
+    [newTask, tasks, t.tasks.maxTasksWarning]
+  );
+
+  const decomposeTask = useCallback(
+    async (taskId: string, taskText: string) => {
+      if (!taskText.trim()) return;
+
+      setDecomposingTasks((prev) => new Set(prev).add(taskId));
+      try {
+        const res = await fetch("/api/decompose", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            task: taskText,
+            language,
+            generateFullSteps: true,
+          }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+        const data = await res.json();
+        if (data.steps) {
+          setTasks((prevTasks) =>
+            prevTasks.map((task) =>
+              task.id === taskId
+                ? {
+                    ...task,
+                    steps: data.steps.map((s: Step) => s.text),
+                    estimatedTimes: data.steps.map((s: Step) => s.time),
+                    currentStepIndex: 0,
+                    completedSteps: [],
+                    skippedSteps: [],
+                  }
+                : task
+            )
+          );
+          setDecomposingTasks((prev) => {
+            const next = new Set(prev);
+            next.delete(taskId);
+            return next;
+          });
+        }
+      } catch (error) {
+        console.error(error);
+        alert(t.tasks.suggestError);
+      }
+    },
+    [language, t.tasks.suggestError]
+  );
+
+  const toggleTask = useCallback((id: string) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === id ? { ...task, completed: !task.completed } : task
       )
     );
-  };
+  }, []);
 
-  const deleteTask = (id: string) => {
-    console.log("Deleting task:", id);
-    const taskToDelete = tasks.find((task) => task.id === id);
-    if (!taskToDelete) return;
+  const deleteTask = useCallback(
+    (id: string) => {
+      const taskToDelete = tasks.find((task) => task.id === id);
+      if (!taskToDelete) return;
 
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== id));
 
-    setDeletedTask({ ...taskToDelete, deletedAt: Date.now() });
-    setShowUndo(true);
-    setTimeout(() => setShowUndo(false), 3000);
-  };
+      setDeletedTask({ ...taskToDelete, deletedAt: Date.now() });
+      setShowUndo(true);
+      const timeoutId = setTimeout(() => setShowUndo(false), 3000);
+      return () => clearTimeout(timeoutId);
+    },
+    [tasks]
+  );
 
-  const editTask = (id: string, newTitle: string, updates = {}) => {
-    console.log("Editing task:", id, newTitle);
+  const editTask = useCallback((id: string, newTitle: string, updates = {}) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) =>
         task.id === id ? { ...task, title: newTitle, ...updates } : task
       )
     );
-  };
+  }, []);
 
-  const activeTasks = tasks.filter((task) => !task.completed);
-  const completedTasks = tasks.filter((task) => task.completed);
+  const { activeTasks, completedTasks } = useMemo(
+    () => ({
+      activeTasks: tasks.filter((task) => !task.completed),
+      completedTasks: tasks.filter((task) => task.completed),
+    }),
+    [tasks]
+  );
 
-  const handleUndo = () => {
+  const handleUndo = useCallback(() => {
     if (!deletedTask) return;
     setTasks((prev) => [...prev, deletedTask]);
     setDeletedTask(null);
     setShowUndo(false);
-  };
+  }, [deletedTask]);
 
-  const handleCompleteStep = (taskId: string) => {
+  const handleCompleteStep = useCallback((taskId: string) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) => {
         if (task.id !== taskId) return task;
@@ -182,9 +194,9 @@ export default function TasksPage() {
         };
       })
     );
-  };
+  }, []);
 
-  const handleSkipStep = (taskId: string) => {
+  const handleSkipStep = useCallback((taskId: string) => {
     setTasks((prevTasks) =>
       prevTasks.map((task) => {
         if (task.id !== taskId) return task;
@@ -204,9 +216,9 @@ export default function TasksPage() {
         };
       })
     );
-  };
+  }, []);
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
     const { active, over } = event;
 
     if (active.id !== over?.id) {
@@ -217,7 +229,7 @@ export default function TasksPage() {
         return arrayMove(items, oldIndex, newIndex);
       });
     }
-  };
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -251,9 +263,9 @@ export default function TasksPage() {
                     onToggle={toggleTask}
                     onDelete={deleteTask}
                     onEdit={editTask}
+                    isDecomposing={decomposingTasks.has(task.id)}
                     onCompleteStep={handleCompleteStep}
                     onSkipStep={handleSkipStep}
-                    isDecomposing={decomposingTasks.has(task.id)}
                   />
                 ))}
               </SortableContext>
@@ -261,43 +273,42 @@ export default function TasksPage() {
           </DndContext>
 
           {completedTasks.length > 0 && (
-            <div className="mt-8">
-              <h2 className="text-xl font-semibold text-gray-600 mb-4">
+            <div className="mt-8 space-y-4">
+              <h2 className="text-xl font-semibold text-primary-dark">
                 {t.tasks.completed}
               </h2>
-              <div className="space-y-4 opacity-60">
-                {completedTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    {...task}
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
-                    onEdit={editTask}
-                    onCompleteStep={handleCompleteStep}
-                    onSkipStep={handleSkipStep}
-                  />
-                ))}
-              </div>
+              {completedTasks.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  {...task}
+                  onToggle={toggleTask}
+                  onDelete={deleteTask}
+                  onEdit={editTask}
+                  isDecomposing={decomposingTasks.has(task.id)}
+                  onCompleteStep={handleCompleteStep}
+                  onSkipStep={handleSkipStep}
+                />
+              ))}
+            </div>
+          )}
+
+          {showUndo && (
+            <div className="fixed bottom-4 left-0 right-0 mx-auto max-w-sm">
+              <Card className="px-4 py-3 flex items-center justify-between bg-info-light text-info-dark">
+                <p>{t.tasks.taskDeleted}</p>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleUndo}
+                  className="ml-4"
+                >
+                  {t.tasks.undoButton}
+                </Button>
+              </Card>
             </div>
           )}
         </div>
       </div>
-
-      {showUndo && (
-        <div className="fixed bottom-4 right-4 animate-fadeIn">
-          <Card className="bg-gray-800 text-white px-4 py-3 flex items-center gap-3">
-            <span>{t.tasks.taskDeleted}</span>
-            <Button
-              variant="secondary"
-              onClick={handleUndo}
-              className="!py-1 !px-3 bg-white/10 hover:bg-white/20 
-                border-white/20 text-white"
-            >
-              {t.tasks.undoButton}
-            </Button>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

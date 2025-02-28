@@ -2,6 +2,7 @@
 ├── ARCHITECTURE.md
 ├── README.md
 ├── eslint.config.mjs
+├── exampleHomepage.tsx
 ├── next-env.d.ts
 ├── next.config.ts
 ├── package-lock.json
@@ -17,6 +18,9 @@
 │   └── window.svg
 ├── src
 │   ├── app
+│   │   ├── (home)
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx
 │   │   ├── api
 │   │   │   ├── decompose
 │   │   │   └── notes
@@ -38,6 +42,7 @@
 │   │   │   └── TextArea.tsx
 │   │   ├── features
 │   │   │   ├── community
+│   │   │   ├── home
 │   │   │   ├── notes
 │   │   │   └── tasks
 │   │   └── layout
@@ -71,4 +76,4 @@
 ├── tailwind.config.ts
 └── tsconfig.json
 
-27 directories, 45 files
+29 directories, 48 files

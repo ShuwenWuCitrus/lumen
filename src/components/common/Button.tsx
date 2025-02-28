@@ -2,23 +2,33 @@
 
 import { ButtonHTMLAttributes } from "react";
 import { cn } from "@/utils/cn";
+import React from "react";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "outline";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   isLoading?: boolean;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
-export function Button({
+// 使用React.memo优化Button组件，避免不必要的重渲染
+export const Button = React.memo(function Button({
   variant = "primary",
   size = "md",
   fullWidth = false,
   isLoading = false,
   className,
   children,
+  onClick,
   ...props
 }: ButtonProps) {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (isLoading) return;
+    e.stopPropagation();
+    onClick?.(e);
+  };
+
   return (
     <button
       className={cn(
@@ -38,9 +48,10 @@ export function Button({
         className
       )}
       disabled={isLoading}
+      onClick={handleClick}
       {...props}
     >
       {isLoading ? "Loading..." : children}
     </button>
   );
-}
+});

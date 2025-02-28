@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { TimeRange, AnalysisResult } from "@/types/mood";
 import { Note } from "@/types/note";
 
@@ -32,99 +32,123 @@ export const useNotes = () => {
     }
   }, []);
 
-  // Save notes to localStorage
+  // Save notes to localStorage - 使用防抖优化
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  }, [notes]);
-
-  const addNote = async (content: string, mood: string | null) => {
-    if (!content.trim() || isSubmitting) return;
-
-    setIsSubmitting(true);
-    const note: Note = {
-      id: crypto.randomUUID(),
-      content: content.trim(),
-      mood: mood || "neutral",
-      createdAt: new Date().toISOString(),
+    const saveHandler = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
     };
 
-    setNotes([note, ...notes]);
-    setIsSubmitting(false);
-    return note;
-  };
+    // 使用requestAnimationFrame优化写入性能
+    const rafId = requestAnimationFrame(saveHandler);
+    return () => cancelAnimationFrame(rafId);
+  }, [notes]);
 
-  const deleteNote = (id: string) => {
-    setNotes(notes.filter((note) => note.id !== id));
-  };
+  const addNote = useCallback(
+    async (content: string, mood: string | null) => {
+      if (!content.trim() || isSubmitting) return;
 
-  const editNote = (id: string, newContent: string) => {
-    setNotes(
-      notes.map((note) =>
+      setIsSubmitting(true);
+      const note: Note = {
+        id: crypto.randomUUID(),
+        content: content.trim(),
+        mood: mood || "neutral",
+        createdAt: new Date().toISOString(),
+      };
+
+      setNotes((prevNotes) => [note, ...prevNotes]);
+      setIsSubmitting(false);
+      return note;
+    },
+    [isSubmitting]
+  );
+
+  const deleteNote = useCallback((id: string) => {
+    setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
+  }, []);
+
+  const editNote = useCallback((id: string, newContent: string) => {
+    setNotes((prevNotes) =>
+      prevNotes.map((note) =>
         note.id === id ? { ...note, content: newContent } : note
       )
     );
-  };
+  }, []);
 
-  const analyzeNotes = async (timeRange: TimeRange, language: string) => {
-    if (notes.length === 0 || isAnalyzing) return;
+  const analyzeNotes = useCallback(
+    async (timeRange: TimeRange, language: string) => {
+      if (notes.length === 0 || isAnalyzing) return;
 
-    setIsAnalyzing(true);
-    setAnalysisError(null);
+      setIsAnalyzing(true);
+      setAnalysisError(null);
 
-    // 检查笔记数量是否足够
-    if (notes.length < MIN_NOTES_FOR_ANALYSIS) {
-      console.log("Not enough notes for analysis:", notes.length);
-      setAnalysisError({
-        needMoreNotes: true,
-        requiredCount: MIN_NOTES_FOR_ANALYSIS,
-        currentCount: notes.length,
-      });
-      setAnalysis(null);
-      setIsAnalyzing(false);
-      return;
-    }
-
-    try {
-      console.log("Attempting to analyze notes:", notes.length);
-      const response = await fetch("/api/notes/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ notes, timeRange, language }),
-      });
-
-      if (!response.ok) {
-        console.error("Analysis API error:", response.status);
-        throw new Error("Analysis failed");
+      // 检查笔记数量是否足够
+      if (notes.length < MIN_NOTES_FOR_ANALYSIS) {
+        setAnalysisError({
+          needMoreNotes: true,
+          requiredCount: MIN_NOTES_FOR_ANALYSIS,
+          currentCount: notes.length,
+        });
+        setAnalysis(null);
+        setIsAnalyzing(false);
+        return;
       }
 
-      const result = await response.json();
-      console.log("Analysis completed successfully");
-      setAnalysis(result);
-      setAnalysisError(null);
-    } catch (error) {
-      console.error("Failed to analyze notes:", error);
-      setAnalysis(null);
-      setAnalysisError({
-        needMoreNotes: false,
-        requiredCount: MIN_NOTES_FOR_ANALYSIS,
-        currentCount: notes.length,
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+      try {
+        const response = await fetch("/api/notes/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ notes, timeRange, language }),
+        });
 
-  return {
-    notes,
-    isSubmitting,
-    isAnalyzing,
-    analysis,
-    needMoreNotes: analysisError?.needMoreNotes || false,
-    requiredCount: MIN_NOTES_FOR_ANALYSIS,
-    currentCount: notes.length,
-    addNote,
-    deleteNote,
-    editNote,
-    analyzeNotes,
-  };
+        if (!response.ok) {
+          throw new Error("Analysis failed");
+        }
+
+        const result = await response.json();
+        setAnalysis(result);
+        setAnalysisError(null);
+      } catch (error) {
+        console.error("Failed to analyze notes:", error);
+        setAnalysis(null);
+        setAnalysisError({
+          needMoreNotes: false,
+          requiredCount: MIN_NOTES_FOR_ANALYSIS,
+          currentCount: notes.length,
+        });
+      } finally {
+        setIsAnalyzing(false);
+      }
+    },
+    [notes, isAnalyzing]
+  );
+
+  // 使用useMemo避免不必要的对象重建
+  const returnValue = useMemo(
+    () => ({
+      notes,
+      isSubmitting,
+      isAnalyzing,
+      analysis,
+      needMoreNotes: analysisError?.needMoreNotes || false,
+      requiredCount: MIN_NOTES_FOR_ANALYSIS,
+      currentCount: notes.length,
+      addNote,
+      deleteNote,
+      editNote,
+      analyzeNotes,
+    }),
+    [
+      notes,
+      isSubmitting,
+      isAnalyzing,
+      analysis,
+      analysisError,
+      addNote,
+      deleteNote,
+      editNote,
+      analyzeNotes,
+    ]
+  );
+
+  return returnValue;
 };

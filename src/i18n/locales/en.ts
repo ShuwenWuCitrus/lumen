@@ -8,7 +8,7 @@ export default {
   home: {
     welcome: "Welcome to Lumen",
     description:
-      "A platform helping ADHD users manage tasks, record thoughts, and find resonance",
+      "A calm, AI-assisted space for ADHD users to organize thoughts, manage tasks, and connect with a like-minded community.",
     startButton: "Start Your Journey",
     taskCard: {
       title: "Task Management",

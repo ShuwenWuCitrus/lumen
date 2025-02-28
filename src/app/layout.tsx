@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer"; // Fixed the import path
-import { Providers, LanguageAwareHtml } from "@/components/layout/Providers";
+import { Footer } from "@/components/layout/Footer";
+import { Providers } from "./providers";
 
 const poppins = Poppins({
   weight: ["300", "400", "500", "600", "700"],
@@ -23,19 +23,19 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <Providers>
-      <LanguageAwareHtml>
-        <body
-          className={`${poppins.variable} h-screen flex flex-col font-sans`}
-          suppressHydrationWarning
-        >
+    <html lang="en">
+      <body
+        className={`${poppins.variable} h-screen flex flex-col font-sans`}
+        suppressHydrationWarning
+      >
+        <Providers>
           <Navbar className="flex-none" />
           <div className="flex-1 flex flex-col overflow-hidden pt-16">
             {children}
           </div>
           <Footer className="flex-none" />
-        </body>
-      </LanguageAwareHtml>
-    </Providers>
+        </Providers>
+      </body>
+    </html>
   );
 }

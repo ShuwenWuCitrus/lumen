@@ -2,7 +2,6 @@
 
 import { Task } from "@/types/task";
 import { Card } from "@/components/common/Card";
-import { Button } from "@/components/common/Button";
 import { cn } from "@/utils/cn";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
@@ -43,7 +42,10 @@ export function TaskCard({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id });
+  } = useSortable({
+    id,
+    disabled: isEditing,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -54,8 +56,8 @@ export function TaskCard({
     e.preventDefault();
     if (editedTitle.trim() === "") return;
     onEdit(id, editedTitle.trim(), {
-      currentStepIndex: currentStepIndex,
-      completedSteps: completedSteps,
+      currentStepIndex,
+      completedSteps,
     });
     setIsEditing(false);
   };
@@ -64,51 +66,45 @@ export function TaskCard({
   const isLastStep = currentStepIndex === (steps?.length ?? 0) - 1;
   const hasSteps = steps?.length > 0;
 
-  const handleSkip = () => {
-    onSkipStep(id);
-    if (isLastStep) {
-      onToggle(id); // 在最后一步跳过时直接完成任务
-    }
-  };
-
-  const handleUndoStep = () => {
-    if (currentStepIndex > 0) {
-      // Remove the last completed or skipped step
-      const lastCompletedIndex = completedSteps[completedSteps.length - 1];
-      const lastSkippedIndex = skippedSteps[skippedSteps.length - 1];
-
-      if (lastCompletedIndex === currentStepIndex - 1) {
-        const newCompletedSteps = [...completedSteps];
-        newCompletedSteps.pop();
-        onEdit(id, title, {
-          currentStepIndex: currentStepIndex - 1,
-          completedSteps: newCompletedSteps,
-        });
-      } else if (lastSkippedIndex === currentStepIndex - 1) {
-        const newSkippedSteps = [...skippedSteps];
-        newSkippedSteps.pop();
-        onEdit(id, title, {
-          currentStepIndex: currentStepIndex - 1,
-          skippedSteps: newSkippedSteps,
-        });
-      }
-    }
-  };
-
   return (
     <Card
       ref={setNodeRef}
       style={style}
       className={cn(
-        "flex flex-col gap-4 transition-all cursor-move",
+        "flex flex-col gap-4 transition-all bg-white rounded-xl p-4 shadow-sm",
         completed && "opacity-60",
         isDragging && "shadow-lg scale-105 bg-white/90 rotate-1"
       )}
-      {...attributes}
-      {...listeners}
     >
       <div className="flex items-center gap-4">
+        {/* 拖拽手柄 */}
+        <div
+          {...attributes}
+          {...listeners}
+          className={cn(
+            "w-6 h-6 flex items-center justify-center cursor-move",
+            "text-gray-400 hover:text-gray-600",
+            isEditing && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 8h16M4 16h16"
+            />
+          </svg>
+        </div>
+
+        {/* 完成按钮 */}
         <button
+          type="button"
           onClick={() => onToggle(id)}
           className={cn(
             "w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors",
@@ -134,6 +130,7 @@ export function TaskCard({
           )}
         </button>
 
+        {/* 标题 */}
         {isEditing ? (
           <form onSubmit={handleEditSubmit} className="flex-1">
             <input
@@ -163,15 +160,19 @@ export function TaskCard({
           </span>
         )}
 
+        {/* 操作按钮 */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
+          <button
+            type="button"
             onClick={() => setIsEditing(true)}
-            className="!p-2 text-gray-400 hover:text-primary
-              bg-white hover:bg-primary-50
-              transition-all duration-200
-              border border-gray-200 hover:border-primary-200
-              opacity-50 hover:opacity-100"
+            className={cn(
+              "p-2 text-gray-400 hover:text-primary",
+              "bg-white hover:bg-primary-50",
+              "transition-all duration-200",
+              "border border-gray-200 hover:border-primary-200",
+              "opacity-50 hover:opacity-100",
+              "rounded-lg"
+            )}
           >
             <svg
               className="w-4 h-4"
@@ -186,16 +187,19 @@ export function TaskCard({
                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
               />
             </svg>
-          </Button>
+          </button>
 
-          <Button
-            variant="secondary"
+          <button
+            type="button"
             onClick={() => onDelete(id)}
-            className="!p-2 text-gray-400 hover:text-rose-500
-              bg-white hover:bg-rose-50
-              transition-all duration-200
-              border border-gray-200 hover:border-rose-200
-              opacity-50 hover:opacity-100"
+            className={cn(
+              "p-2 text-gray-400 hover:text-rose-500",
+              "bg-white hover:bg-rose-50",
+              "transition-all duration-200",
+              "border border-gray-200 hover:border-rose-200",
+              "opacity-50 hover:opacity-100",
+              "rounded-lg"
+            )}
           >
             <svg
               className="w-5 h-5"
@@ -210,10 +214,11 @@ export function TaskCard({
                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
               />
             </svg>
-          </Button>
+          </button>
         </div>
       </div>
 
+      {/* 步骤部分 */}
       {hasSteps && !completed && (
         <div className="border-t pt-4 mt-2">
           <div className="flex items-center justify-between mb-3">
@@ -226,33 +231,81 @@ export function TaskCard({
             </div>
             <div className="flex gap-2">
               {currentStepIndex > 0 && (
-                <Button
-                  variant="secondary"
-                  onClick={handleUndoStep}
-                  className="!py-1.5 !px-3 text-sm"
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (currentStepIndex > 0) {
+                      const lastCompletedIndex =
+                        completedSteps[completedSteps.length - 1];
+                      const lastSkippedIndex =
+                        skippedSteps[skippedSteps.length - 1];
+
+                      if (lastCompletedIndex === currentStepIndex - 1) {
+                        const newCompletedSteps = [...completedSteps];
+                        newCompletedSteps.pop();
+                        onEdit(id, title, {
+                          currentStepIndex: currentStepIndex - 1,
+                          completedSteps: newCompletedSteps,
+                        });
+                      } else if (lastSkippedIndex === currentStepIndex - 1) {
+                        const newSkippedSteps = [...skippedSteps];
+                        newSkippedSteps.pop();
+                        onEdit(id, title, {
+                          currentStepIndex: currentStepIndex - 1,
+                          skippedSteps: newSkippedSteps,
+                        });
+                      }
+                    }
+                  }}
+                  className={cn(
+                    "py-1.5 px-3 text-sm",
+                    "bg-white hover:bg-gray-50",
+                    "border border-gray-200",
+                    "rounded-lg",
+                    "transition-colors"
+                  )}
                 >
                   ↩️ {t.tasks.undoButton}
-                </Button>
+                </button>
               )}
-              <Button
-                variant="secondary"
-                onClick={handleSkip}
-                className="!py-1.5 !px-3 text-sm"
+              <button
+                type="button"
+                onClick={() => {
+                  onSkipStep(id);
+                  if (isLastStep) {
+                    onToggle(id);
+                  }
+                }}
+                className={cn(
+                  "py-1.5 px-3 text-sm",
+                  "bg-white hover:bg-gray-50",
+                  "border border-gray-200",
+                  "rounded-lg",
+                  "transition-colors"
+                )}
               >
                 {t.tasks.skipButton}
-              </Button>
-              <Button
+              </button>
+              <button
+                type="button"
                 onClick={() => onCompleteStep(id)}
-                className="!py-1.5 !px-3 text-sm bg-green-600 hover:bg-green-700 text-white"
+                className={cn(
+                  "py-1.5 px-3 text-sm",
+                  "bg-green-600 hover:bg-green-700",
+                  "text-white",
+                  "rounded-lg",
+                  "transition-colors"
+                )}
               >
                 {isLastStep ? t.tasks.doneButton : t.tasks.completeStep}
-              </Button>
+              </button>
             </div>
           </div>
           <p className="text-gray-700">{currentStep}</p>
         </div>
       )}
 
+      {/* 进度条 */}
       {hasSteps && (
         <div className="flex gap-1 mt-2">
           {steps.map((_, index) => (
